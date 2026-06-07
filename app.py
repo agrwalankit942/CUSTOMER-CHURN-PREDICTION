@@ -72,12 +72,6 @@ monthly_charges = st.sidebar.slider(
     70.0
 )
 
-avg_spend = st.sidebar.slider(
-    "Average Monthly Spend ($)",
-    0.0,
-    120.0,
-    65.0
-)
 
 contract = st.sidebar.selectbox(
     "Contract Type",
@@ -88,6 +82,9 @@ internet = st.sidebar.selectbox(
     "Internet Service",
     ["DSL", "Fiber optic", "No"]
 )
+# Derived Feature
+avg_spend = monthly_charges 
+
 
 st.sidebar.markdown("---")
 st.sidebar.caption("Built using Streamlit + Random Forest")
@@ -148,31 +145,13 @@ with tab1:
         # =================================================
         # KPI CARDS
         # =================================================
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric(
-    "Risk Score",
-    f"{risk_score}/100"
-)
-        col1.metric(
-            "Churn Probability",
-            f"{probability:.2%}"
-        )
+        col1, col2, col3, col4, col5 = st.columns(5)
 
-        col2.metric(
-            "Tenure",
-            f"{tenure} Months"
-        )
-
-        col3.metric(
-            "Monthly Charges",
-            f"${monthly_charges}"
-        )
-
-        col4.metric(
-            "Contract",
-            contract
-        )
-
+        col1.metric("Risk Score", f"{risk_score}/100")
+        col2.metric("Churn Probability", f"{probability:.2%}")
+        col3.metric("Tenure", f"{tenure} Months")
+        col4.metric("Monthly Charges", f"${monthly_charges}")
+        col5.metric("Contract", contract)
         st.markdown("---")
 
         # =================================================
@@ -242,7 +221,7 @@ typically show elevated churn risk.
         importance = pd.Series(
             model.feature_importances_,
             index=feature_names
-        ).sort_values(ascending=False).head(10)
+        ).sort_values(ascending=True).tail(10)
 
         importance_df = pd.DataFrame({
             "Feature": importance.index,
@@ -253,9 +232,21 @@ typically show elevated churn risk.
             importance_df,
             x="Importance",
             y="Feature",
-            orientation='h',
-            text="Importance",
-            title="Feature Importance Analysis"
+            orientation="h",
+            text=importance_df["Importance"].round(3),
+            title="Top 10 Most Important Features"
+        )
+
+        fig.update_traces(
+            textposition="outside"
+        )
+
+        fig.update_layout(
+            height=500,
+            title_x=0.5,
+            xaxis_title="Importance Score",
+            yaxis_title="",
+            showlegend=False
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -303,11 +294,7 @@ typically show elevated churn risk.
             Suggested Action:
             Maintain customer satisfaction programs.
             """)
-
-        
-# =====================================================
-# TAB 2 - BULK PREDICTION
-# =====================================================
+  
 
 # =====================================================
 # TAB 2 - BULK PREDICTION
